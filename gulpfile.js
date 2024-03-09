@@ -93,6 +93,26 @@ function js(){
     .pipe(dest(path.build.js));
 }
 
+function images (){
+  return src(path.src.images, { base: srcPath + "assets/images/" })
+  .pipe(imagemin([
+    imagemin.gifsicle({interlaced:true}),
+    imagemin.mozjpeg({quality:80,progressive:true}),
+    imagemin.optipng({optimizationLevel:5}),
+    imagemin.svgo({
+      plugins:[
+        {removeViewBox:true},
+        {cleanupIDs:false}
+      ]
+    })
+
+  ]))
+  .pipe(dest(path.build.images))
+}
+
+
+
 exports.html = html;
 exports.css = css;
 exports.js = js;
+exports.images = images;
