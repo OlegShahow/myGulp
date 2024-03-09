@@ -49,12 +49,23 @@ const path = {
   clean: "./" + distPath,
 };
 
+// ------------   автоперезагрузка браузера ( без него тоже работает )  -------------
+
+function serve (){
+  browserSync.init({
+    server:{
+      baseDir:"./" + distPath
+    }
+  })
+}
+
 // ---------------------------  task --------------------------------------------
 
 function html() {
   return src(path.src.html, { base: srcPath })
     .pipe(plumber())
-    .pipe(dest(path.build.html));
+    .pipe(dest(path.build.html))
+    .pipe( browserSync.reload({stream:true}));
 }
 
 function css() {
@@ -77,7 +88,8 @@ function css() {
         extname: ".css",
       })
     )
-    .pipe(dest(path.build.css));
+    .pipe(dest(path.build.css))
+    .pipe( browserSync.reload({stream:true}));
 }
 
 function js(){
@@ -90,7 +102,8 @@ function js(){
         suffix : ".min",
         extname:".js"
     }))
-    .pipe(dest(path.build.js));
+    .pipe(dest(path.build.js))
+    .pipe( browserSync.reload({stream:true}));
 }
 
 function images (){
@@ -108,9 +121,13 @@ function images (){
 
   ]))
   .pipe(dest(path.build.images))
+  .pipe( browserSync.reload({stream:true}));
 }
+
+
 function fonts (){
   return src(path.src.fonts, { base: srcPath + "assets/fonts/" })
+  .pipe( browserSync.reload({stream:true}));
 }
 
 
@@ -118,9 +135,16 @@ function clean (){
   return del(path.clean)
 }
 
+function watchFiles(){
+  gulp.watch([path.watch.html],html)
+  gulp.watch([path.watch.css],css)
+  gulp.watch([path.watch.js],js)
+  gulp.watch([path.watch.images],images)
+  gulp.watch([path.watch.fonts],fonts)
+}
 
 const build = gulp.series(clean,gulp.parallel(html,css,js,images,fonts))
-
+const watch = gulp.parallel(build,watchFiles,serve)
 
 exports.html = html;
 exports.css = css;
@@ -129,3 +153,5 @@ exports.images = images;
 exports.fonts = fonts;
 exports.clean = clean;
 exports.build = build;
+exports.watch = watch;
+exports.default = watch;
